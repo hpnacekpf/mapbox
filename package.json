@@ -18,6 +18,15 @@
     "@angular/platform-browser": "^14.0.0",
     "@angular/platform-browser-dynamic": "^14.0.0",
     "@angular/router": "^14.0.0",
+    "@mapbox/mapbox-gl-directions": "^4.1.0",
+    "@mapbox/mapbox-gl-geocoder": "^5.0.1",
+    "@turf/buffer": "^6.5.0",
+    "@turf/collect": "^6.5.0",
+    "@types/lodash-es": "^4.17.6",
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
+    "mapbox-gl": "^2.9.2",
+    "ngx-mapbox-gl": "^9.1.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
@@ -27,6 +36,8 @@
     "@angular/cli": "~14.0.2",
     "@angular/compiler-cli": "^14.0.0",
     "@types/jasmine": "~4.0.0",
+    "@types/mapbox__mapbox-gl-geocoder": "^4.7.3",
+    "@types/mapbox-gl": "^2.7.5",
     "jasmine-core": "~4.1.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -34,5 +45,10 @@
     "karma-jasmine": "~5.0.0",
     "karma-jasmine-html-reporter": "~1.7.0",
     "typescript": "~4.7.2"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }

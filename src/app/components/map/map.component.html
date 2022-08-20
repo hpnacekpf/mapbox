@@ -1,0 +1,28 @@
+<mgl-map #map [style]="'mapbox://styles/mapbox/streets-v11'" [zoom]="[zoom]" [center]="[105.804817, 21.028511]" (load)="mapLoad($event)">
+  <!-- <mgl-marker [lngLat]="center" (markerDragEnd)="markerDragEnd($event)" [draggable]="true">
+  </mgl-marker>
+  <mgl-marker [lngLat]="center2" (markerDragEnd)="markerDragEnd2($event)" [draggable]="true">
+  </mgl-marker> -->
+  <!-- <mgl-layer id="route" type="line" [source]="{
+        'type': 'geojson',
+        'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': [
+                    [105.804817, 21.028511],
+                    [105.824817, 21.038511]
+                ]
+            }
+        }
+      }" [layout]="{
+        'line-join': 'round',
+        'line-cap': 'round'
+      }" [paint]="{
+        'line-color': '#888',
+        'line-width': 8
+      }">
+  </mgl-layer> -->
+  <!-- <mgl-geojson-source id="earthquakes" [cluster]="true" [clusterMaxZoom]="14" [clusterRadius]="50"></mgl-geojson-source> -->
+</mgl-map>
