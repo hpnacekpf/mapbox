@@ -1,4 +1,7 @@
-<mgl-map #map [style]="'mapbox://styles/mapbox/streets-v11'" [zoom]="[zoom]" [center]="[105.804817, 21.028511]" (load)="mapLoad($event)">
+<mgl-map #map [style]="'mapbox://styles/mapbox/streets-v11'" [zoom]="[zoom]" [center]="center" (load)="mapLoad($event)">
+  <mgl-control mglGeolocate [positionOptions]="{
+        enableHighAccuracy: true
+      }" [trackUserLocation]="true"></mgl-control>
   <!-- <mgl-marker [lngLat]="center" (markerDragEnd)="markerDragEnd($event)" [draggable]="true">
   </mgl-marker>
   <mgl-marker [lngLat]="center2" (markerDragEnd)="markerDragEnd2($event)" [draggable]="true">

@@ -50,7 +50,7 @@ export class MapComponent implements OnInit {
   }
   array: any[] = [];
 
-  @Input() center: LatLng = { lng: 105.804817, lat: 21.028511 };
+  @Input() center: LatLng = { lng: 105.824817, lat: 21.028511 };
   @Input() center2: LatLng = { lng: 105.824817, lat: 21.038511 };
   @Input() zoom: number = 14;
 
@@ -67,148 +67,231 @@ export class MapComponent implements OnInit {
     var end: any[];
     var marker1: any;
     var marker2: any;
-    var warehouseLocation: mapboxgl.LngLatLike = [105.804817, 21.038511];
+    var warehouseLocation: any = [105.814817, 21.038511];
     var lastAtRestaurant = 0;
     var keepTrack = [];
-    var pointHopper = {};
+    var pointHopper: any = {};
     var token =
       'pk.eyJ1IjoiaHBuYWNlMjMwMiIsImEiOiJjbDE0b2Q5enAwY3M0M2RrYXUzenhjaDJlIn0.TNfw5lGqMoE1Q8_x4BVa-g';
     // const truckLocation = [105.804817, 21.038511];
-    new mapboxgl.Marker().setLngLat(this.center).addTo(map);
+    // new mapboxgl.Marker().setLngLat(this.center).addTo(map);
+    console.log(turf);
 
     const warehouse = turf.featureCollection([turf.point(warehouseLocation)]);
+    console.log(warehouse);
 
     // Create an empty GeoJSON feature collection for drop off locations
+    // Tạo một bộ sưu tập tính năng GeoJSON trống cho các địa điểm trả khách
+    // const dropoffs = turf.featureCollection([]);
     const dropoffs = turf.featureCollection([]);
+    console.log(dropoffs);
 
     // Create an empty GeoJSON feature collection, which will be used as the data source for the route before users add any new data
+    // Tạo một bộ sưu tập tính năng GeoJSON trống, bộ sưu tập này sẽ được sử dụng làm nguồn dữ liệu cho tuyến đường trước khi người dùng thêm bất kỳ dữ liệu mới nào
     const nothing = turf.featureCollection([]);
+    console.log(nothing);
+    // const marker = document.createElement('div');
+    // marker.classList = 'truck';
 
-    map.on('load', async () => {
-      // const marker = document.createElement('div');
-      // marker.classList = 'truck';
+    map.loadImage(
+      '../../../assets/img/PngItem_5290529.png',
+      function (error: any, image: any) {
+        if (error) throw error;
+        map.addImage('custom-marker', image);
+      }
+    );
+    // Create a new marker
 
-      // Create a new marker
-      new mapboxgl.Marker().setLngLat(this.center).addTo(map);
+    map.addLayer({
+      id: 'field-service',
+      type: 'symbol',
+      source: {
+        data: {
+          geometry: { type: 'Point', coordinates: [this.center.lng, this.center.lat] },
+          type: 'Feature',
+        },
+        type: 'geojson',
+      },
+      layout: {
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-image': 'custom-marker',
+        'icon-size': 0.1,
+      },
+    });
 
-      // Create a circle layer
-      map.addLayer({
-        id: 'warehouse',
-        type: 'circle',
-        source: {
-          data: warehouse,
-          type: 'geojson',
+    // Create a circle layer
+    // Tạo một lớp hình tròn
+    map.addLayer({
+      id: 'warehouse',
+      type: 'circle',
+      source: {
+        data: warehouse,
+        type: 'geojson',
+      },
+      paint: {
+        'circle-radius': 20,
+        'circle-color': 'white',
+        'circle-stroke-color': '#3887be',
+        'circle-stroke-width': 3,
+      },
+    });
+
+    // Create a symbol layer on top of circle layer
+    // Tạo một lớp biểu tượng trên đầu lớp hình tròn
+    map.addLayer({
+      id: 'warehouse-symbol',
+      type: 'symbol',
+      source: {
+        data: warehouse,
+        type: 'geojson',
+      },
+      layout: {
+        'icon-image': 'grocery-15',
+        'icon-size': 1,
+      },
+      paint: {
+        'text-color': '#3887be',
+      },
+    });
+
+    // thêm hiển thị điểm đến trên map
+    map.addLayer({
+      id: 'dropoffs-symbol',
+      type: 'symbol',
+      source: {
+        data: dropoffs,
+        type: 'geojson',
+      },
+      layout: {
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-image': 'marker-15',
+        // 'icon-image': 'custom-marker',
+        // 'icon-size': 0.15,
+      },
+    });
+
+    map.addSource('route', {
+      type: 'geojson',
+      data: nothing,
+    });
+
+    map.addLayer(
+      {
+        id: 'routeline-active',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
         },
         paint: {
-          'circle-radius': 20,
-          'circle-color': 'white',
-          'circle-stroke-color': '#3887be',
-          'circle-stroke-width': 3,
+          'line-color': '#3887be',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 3, 22, 12],
         },
-      });
+      },
+      'waterway-label'
+    );
 
-      // Create a symbol layer on top of circle layer
-      map.addLayer({
-        id: 'warehouse-symbol',
+    map.addLayer(
+      {
+        id: 'routearrows',
         type: 'symbol',
-        source: {
-          data: warehouse,
-          type: 'geojson',
-        },
+        source: 'route',
         layout: {
-          'icon-image': 'grocery-15',
-          'icon-size': 1,
+          'symbol-placement': 'line',
+          'text-field': '▶',
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 24, 22, 60],
+          'symbol-spacing': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            12,
+            30,
+            22,
+            160,
+          ],
+          'text-keep-upright': false,
         },
         paint: {
           'text-color': '#3887be',
+          'text-halo-color': 'hsl(55, 11%, 96%)',
+          'text-halo-width': 3,
         },
-      });
+      },
+      'waterway-label'
+    );
 
-      map.addLayer({
-        id: 'dropoffs-symbol',
-        type: 'symbol',
-        source: {
-          data: dropoffs,
-          type: 'geojson',
-        },
-        layout: {
-          'icon-allow-overlap': true,
-          'icon-ignore-placement': true,
-          'icon-image': 'marker-15',
-        },
-      });
+    // Listen for a click on the map
+    await map.on('click', addWaypoints);
+    // });
 
-      map.addSource('route', {
-        type: 'geojson',
-        data: nothing,
-      });
+    // const onDragEnd = async (e: any) => {
+    //   console.log(e.target._map._markers);
+    //   var newDropoffs: any[] = [];
+    //   console.log(dropoffs.features);
+    //   if (e.target._map._markers.length > dropoffs.features.length) {
+    //     newDropoffs = e.target._map._markers.splice(0, 2);
+    //     console.log(newDropoffs);
+    //   }
 
-      map.addLayer(
-        {
-          id: 'routeline-active',
-          type: 'line',
-          source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': '#3887be',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 12, 3, 22, 12],
-          },
-        },
-        'waterway-label'
-      );
+    //   if (e.target._map._markers.length === dropoffs.features.length) {
+    //     dropoffs.features.map((item, index) => {
+    //       e.target._map._markers.map((marker: any) => {
+    //         item.geometry.coordinates = [
+    //           marker._lngLat.lng,
+    //           marker._lngLat.lat,
+    //         ];
+    //         if (e.target._map._markers.length !== dropoffs.features.length) {
+    //           if (item.geometry.coordinates[0] !== marker._lngLat.lng) {
+    //             dropoffs.features.slice(index, 1);
+    //           }
+    //         }
+    //         // console.log(item.geometry.coordinates = [marker._lngLat.lng, marker._lngLat.lat])
+    //         // console.log(marker._lngLat)
+    //       });
+    //     });
+    //   }
+    //   const pt = turf.point([e.target._lngLat.lng, e.target._lngLat.lat], {
+    //     orderTime: Date.now(),
+    //     // key: Math.random(),
+    //   });
+    //   console.log(pt);
+    //   // dropoffs.features.pop();
+    //   console.log(dropoffs);
+    //   // delete pointHopper[pt.properties.key];
+    //   await newDropoff(e.target._lngLat);
+    //   updateDropoffs(dropoffs);
+    //   console.log(dropoffs);
+    // };
 
-      map.addLayer(
-        {
-          id: 'routearrows',
-          type: 'symbol',
-          source: 'route',
-          layout: {
-            'symbol-placement': 'line',
-            'text-field': '▶',
-            'text-size': ['interpolate', ['linear'], ['zoom'], 12, 24, 22, 60],
-            'symbol-spacing': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12,
-              30,
-              22,
-              160,
-            ],
-            'text-keep-upright': false,
-          },
-          paint: {
-            'text-color': '#3887be',
-            'text-halo-color': 'hsl(55, 11%, 96%)',
-            'text-halo-width': 3,
-          },
-        },
-        'waterway-label'
-      );
-
-      // Listen for a click on the map
-      await map.on('click', addWaypoints);
-    });
-
-    async function addWaypoints(event: { point: any }) {
+    async function addWaypoints(event: { lngLat: any }) {
+      console.log(event);
       // When the map is clicked, add a new drop off point
       // and update the `dropoffs-symbol` layer
-      await newDropoff(map.unproject(event.point));
+      // Khi nhấp vào bản đồ, hãy thêm một điểm trả khách mới
+      // và cập nhật lớp `droppoffs-symbol`
+      console.log(event.lngLat);
+      new mapboxgl.Marker().setLngLat(event.lngLat).addTo(map);
+      // .on('dragend', onDragEnd);
+      await newDropoff(event.lngLat);
       updateDropoffs(dropoffs);
     }
 
     async function newDropoff(coordinates: { lng: number; lat: number }) {
+      console.log(coordinates);
       // Store the clicked point as a new GeoJSON feature with
       // two properties: `orderTime` and `key`
+      // Lưu trữ điểm đã nhấp dưới dạng tính năng GeoJSON mới với
+      // hai thuộc tính: `orderTime` và` key`
       const pt = turf.point([coordinates.lng, coordinates.lat], {
         orderTime: Date.now(),
         key: Math.random(),
       });
+      console.log(pt);
       dropoffs.features.push(pt);
-      // pointHopper[pt.properties.key] = pt;
+      pointHopper[pt.properties.key] = pt;
 
       // Make a request to the Optimization API
       const query = await fetch(assembleQueryURL(), { method: 'GET' });
@@ -223,67 +306,89 @@ export class MapComponent implements OnInit {
         alert(`${response.code} - ${response.message}\n\n${handleMessage}`);
         // Remove invalid point
         dropoffs.features.pop();
-        // delete pointHopper[pt.properties.key];
+        delete pointHopper[pt.properties.key];
         return;
       }
 
       // Create a GeoJSON feature collection
+      // Tạo bộ sưu tập tính năng GeoJSON
       const routeGeoJSON = turf.featureCollection([
         turf.feature(response.trips[0].geometry),
       ]);
 
       // Update the `route` source by getting the route source
       // and setting the data equal to routeGeoJSON
+      // Cập nhật nguồn `tuyến đường` bằng cách lấy nguồn tuyến
+      // và đặt dữ liệu bằng routeGeoJSON
       map.getSource('route').setData(routeGeoJSON);
     }
 
     function updateDropoffs(
       geojson: turf.FeatureCollection<turf.Geometry, turf.Properties>
     ) {
+      console.log(dropoffs);
       map.getSource('dropoffs-symbol').setData(geojson);
     }
 
     // Here you'll specify all the parameters necessary for requesting a response from the Optimization API
+    // Tại đây, bạn sẽ chỉ định tất cả các tham số cần thiết để yêu cầu phản hồi từ API tối ưu hóa
     const assembleQueryURL = () => {
       // Store the location of the truck in a variable called coordinates
-      const coordinates = [this.center];
+      // Lưu trữ vị trí của xe tải trong một biến có tên là tọa độ
+      const coordinates = [[this.center.lng, this.center.lat]];
       const distributions = [];
       let restaurantIndex;
       keepTrack = [this.center];
 
       // Create an array of GeoJSON feature collections for each point
-      const restJobs = Object.keys(pointHopper).map((key) => pointHopper[key]);
+      // Tạo một mảng các bộ sưu tập tính năng GeoJSON cho mỗi điểm
+      const jobs: any = [...dropoffs.features];
+      // console.log(Object.keys(pointHopper).map((key) => pointHopper[key]));
+      // const restJobs = Object.keys(pointHopper).map((key) => pointHopper[key]);
+      // console.log(dropoffs.features);
+      // console.log('restJobs', restJobs);
 
       // If there are actually orders from this restaurant
-      if (restJobs.length > 0) {
+      // Nếu thực sự có đơn đặt hàng từ nhà hàng này
+      if (jobs.length > 0) {
         // Check to see if the request was made after visiting the restaurant
+        // Kiểm tra xem yêu cầu có được thực hiện sau khi đến nhà hàng hay không
         const needToPickUp =
-          restJobs.filter((d) => d.properties.orderTime > lastAtRestaurant)
+          jobs.filter((d: any) => d.properties.orderTime > lastAtRestaurant)
             .length > 0;
 
         // If the request was made after picking up from the restaurant,
         // Add the restaurant as an additional stop
+        // Nếu yêu cầu được đưa ra sau khi đón khách từ nhà hàng,
+        // Thêm nhà hàng làm điểm dừng bổ sung
         if (needToPickUp) {
           restaurantIndex = coordinates.length;
           // Add the restaurant as a coordinate
+          // Thêm nhà hàng làm tọa độ
           coordinates.push(warehouseLocation);
           // push the restaurant itself into the array
+          // đẩy chính nhà hàng vào mảng
           keepTrack.push(pointHopper.warehouse);
         }
 
-        for (const job of restJobs) {
+        for (const job of jobs) {
           // Add dropoff to list
+          // Thêm người bỏ qua vào danh sách
           keepTrack.push(job);
           coordinates.push(job.geometry.coordinates);
           // if order not yet picked up, add a reroute
+          // nếu đơn hàng chưa được nhận, hãy thêm tuyến đường
           if (needToPickUp && job.properties.orderTime > lastAtRestaurant) {
             distributions.push(`${restaurantIndex},${coordinates.length - 1}`);
+            // console.log(distributions);
           }
         }
       }
 
       // Set the profile to `driving`
       // Coordinates will include the current location of the truck,
+      // Đặt cấu hình thành `drive`
+      // Tọa độ sẽ bao gồm vị trí hiện tại của xe tải,
       return `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordinates.join(
         ';'
       )}?distributions=${distributions.join(
